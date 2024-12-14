@@ -25,6 +25,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            height: 100%; /* Ensures container stretches the full height */
         }
 
         header, footer {
@@ -152,40 +153,6 @@
             background-color: #222222;
         }
 
-        #cube-container {
-            width: 150px;
-            height: 150px;
-            perspective: 600px;
-            margin: auto;
-        }
-
-        #cube {
-            width: 150px;
-            height: 150px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.2s ease;
-        }
-
-        .face {
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            background-color: #3498db;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .front  { transform: translateZ(75px); }
-        .back   { transform: rotateY(180deg) translateZ(75px); }
-        .left   { transform: rotateY(-90deg) translateZ(75px); }
-        .right  { transform: rotateY(90deg) translateZ(75px); }
-        .top    { transform: rotateX(90deg) translateZ(75px); }
-        .bottom { transform: rotateX(-90deg) translateZ(75px); }
-
     </style>
 </head>
 <body>
@@ -220,17 +187,7 @@
                 </div>
             </div>
             <div class="main-right">
-                <div id="cube-container">
-                    <div id="cube">
-                        <div class="face front"></div>
-                        <div class="face back"></div>
-                        <div class="face left"></div>
-                        <div class="face right"></div>
-                        <div class="face top"></div>
-                        <div class="face bottom"></div>
-                    </div>
-                </div>
-            </div>
+                <canvas id="cubeCanvas"></canvas>
         </main>
         <footer>
             <p>Контакты: email@example.com | Телефон: +123456789</p>
