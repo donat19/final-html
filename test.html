@@ -1,161 +1,160 @@
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f0f0f0;
-        color: #333;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Rotating Cube</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            color: white;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="cubeCanvas"></canvas>
 
-    .page-container {
-        width: 100%;
-        max-width: 1000px;
-        background-color: #fff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        margin: 0 auto;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        height: 100%; /* Ensures container stretches the full height */
-        padding: 10px;
-    }
+    <script>
+        const canvas = document.getElementById('cubeCanvas');
+        const ctx = canvas.getContext('2d');
 
-    header, footer {
-        text-align: center;
-        padding: 10px;
-        background-color: #4CAF50;
-        color: white;
-    }
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-    footer {
-        margin-top: auto;
-        font-size: 14px;
-    }
+        let angleX = 0;
+        let angleY = 0;
+        let isMouseMoving = false;
+        let mouseStopTimeout;
 
-    nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #333;
-        padding: 10px 20px;
-        border-radius: 5px;
-    }
+        // Cube vertices
+        const cubeSize = 100;
+        const vertices = [
+            { x: -1, y: -1, z: -1 },
+            { x: 1, y: -1, z: -1 },
+            { x: 1, y: 1, z: -1 },
+            { x: -1, y: 1, z: -1 },
+            { x: -1, y: -1, z: 1 },
+            { x: 1, y: -1, z: 1 },
+            { x: 1, y: 1, z: 1 },
+            { x: -1, y: 1, z: 1 },
+        ];
 
-    nav ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        gap: 20px;
-    }
+        const edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7]
+        ];
 
-    nav ul li {
-        display: inline-block;
-    }
+        function rotate(vertex, angleX, angleY) {
+            const cosX = Math.cos(angleX);
+            const sinX = Math.sin(angleX);
+            const cosY = Math.cos(angleY);
+            const sinY = Math.sin(angleY);
 
-    nav a {
-        text-decoration: none;
-        color: white;
-        padding: 10px 15px;
-        font-size: 16px;
-        font-weight: bold;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-    }
+            // Rotate around X-axis
+            let y = vertex.y * cosX - vertex.z * sinX;
+            let z = vertex.y * sinX + vertex.z * cosX;
+            
+            // Rotate around Y-axis
+            let x = vertex.x * cosY + z * sinY;
+            z = -vertex.x * sinY + z * cosY;
 
-    nav a:hover {
-        background-color: #4CAF50;
-        color: white;
-        transform: scale(1.1);
-    }
+            return { x, y, z };
+        }
 
-    nav a.active {
-        background-color: #4CAF50;
-        color: white;
-    }
+        function project(vertex) {
+            const distance = 4;
+            const z = vertex.z + distance;
+            const perspective = cubeSize / z;
+            const x = vertex.x * perspective + canvas.width / 2;
+            const y = vertex.y * perspective + canvas.height / 2;
+            return { x, y };
+        }
 
-    .nav-right button {
-        padding: 10px 15px;
-        cursor: pointer;
-        border: none;
-        border-radius: 5px;
-        background: linear-gradient(45deg, #ff6f61, #ff915f);
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s ease-in-out;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+        function drawCube() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const rotatedVertices = vertices.map(v => rotate(v, angleX, angleY));
+            const projectedVertices = rotatedVertices.map(v => project(v));
 
-    .nav-right button:hover {
-        background: linear-gradient(45deg, #ff915f, #ff6f61);
-        transform: scale(1.1);
-        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
-    }
+            ctx.beginPath();
+            edges.forEach(([start, end]) => {
+                const v1 = projectedVertices[start];
+                const v2 = projectedVertices[end];
+                ctx.moveTo(v1.x, v1.y);
+                ctx.lineTo(v2.x, v2.y);
+            });
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+        }
 
-    main {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        flex: 1;
-    }
+        function autoRotate() {
+            drawCube();
+            requestAnimationFrame(autoRotate);
+        }
 
-    .main-left, .main-right {
-        background-color: white;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
-    }
-    .main-left-top, .main-left-bottom{
-        height: 50%;
-        width: 50%;
-    }
+        canvas.addEventListener('mousemove', (event) => {
+            isMouseMoving = true;
+            clearTimeout(mouseStopTimeout);
 
-    .main-right {
-        height: 100%;
-    }
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left - canvas.width / 2;
+            const mouseY = event.clientY - rect.top - canvas.height / 2;
 
-    .banner {
-        width: 100%;
-        height: 150px;
-        margin: 20px 0;
-        overflow: hidden;
-        position: relative;
-        border: 2px solid #333;
-        border-radius: 5px;
-    }
+            angleX = mouseY * 0.001;
+            angleY = mouseX * 0.001;
 
-    .banner-slide {
-        width: 100%;
-        height: 100%;
-        background-color: #ff6f61;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 24px;
-        color: white;
-        font-weight: bold;
-        transition: background-color 1s;
-    }
+            mouseStopTimeout = setTimeout(() => {
+                isMouseMoving = false;
+            }, 200);
+        });
 
-    .dark-theme {
-        background-color: #121212;
-        color: #e0e0e0;
-    }
-
-    .dark-theme nav {
-        background-color: #222222;
-    }
-
-    .dark-theme footer {
-        background-color: #222222;
-    }
-
-    canvas {
-        display: block;
-        height: 100%;
-        width: 100%;
-    }
-</style>
+        autoRotate();
+    </script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>

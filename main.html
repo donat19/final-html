@@ -204,7 +204,7 @@
             </section>
         </main>
         <footer>
-            <p>Контакты: email@example.com | Телефон: +123456789</p>
+            <p>Contacts: email@example.com | Phone: +123456789</p>
         </footer>
     </div>
 
@@ -238,55 +238,16 @@
         function updateTime() {
             const now = new Date();
             const timeString = now.toLocaleTimeString();
-            document.querySelector("#current-time").textContent = `Текущее время: ${timeString}`;
+            document.querySelector("#current-time").textContent = `Current Time: ${timeString}`;
         }
 
         const canvas = document.getElementById('fractalCanvas');
         const ctx = canvas.getContext('2d');
-        const maxDepth = 6;  // Максимальная глубина рекурсии
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        resizeCanvas(); // Adjust canvas size initially
-
-        window.addEventListener('resize', resizeCanvas); // Adjust canvas size on window resize
-
-        // Функция для рисования треугольника Серпинского
-        function drawSierpinski(x, y, size, depth) {
-            if (depth === 0) return;
-
-            const h = Math.sqrt(3) * size / 2;
-            const halfSize = size / 2;
-
-            // Вершины треугольника
-            const v1 = { x, y };
-            const v2 = { x: x + size, y };
-            const v3 = { x: x + halfSize, y: y - h };
-
-            // Рисуем основной треугольник
-            ctx.beginPath();
-            ctx.moveTo(v1.x, v1.y);
-            ctx.lineTo(v2.x, v2.y);
-            ctx.lineTo(v3.x, v3.y);
-            ctx.closePath();
-            ctx.stroke();
-
-            // Рекурсивно рисуем под-треугольники
-            drawSierpinski(v1.x, v1.y, halfSize, depth - 1);
-            drawSierpinski(v2.x, v2.y, halfSize, depth - 1);
-            drawSierpinski(v3.x, v3.y, halfSize, depth - 1);
-        }
-
-        function renderFractal() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawSierpinski(50, canvas.height - 100, 300, maxDepth);
-        }
-
+        
+        // Initial time update
         setInterval(updateTime, 1000);
-        renderFractal();  // Start drawing the fractal initially
+
     </script>
 </body>
 </html>
