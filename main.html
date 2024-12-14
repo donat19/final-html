@@ -25,7 +25,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 100%; /* Ensures container stretches the full height */
+            height: 100%;
             padding: 10px;
         }
 
@@ -114,7 +114,8 @@
             padding: 10px;
             border-radius: 5px;
         }
-        .main-left-top, .main-left-bottom{
+
+        .main-left-top, .main-left-bottom {
             height: 50%;
             width: 50%;
         }
@@ -163,6 +164,7 @@
             display: block;
             height: 100%;
             width: 100%;
+            border: 1px solid black;
         }
     </style>
 </head>
@@ -198,7 +200,7 @@
                 </div>
             </section>
             <section class="main-right">
-                <canvas id="cubeCanvas"></canvas>
+                <canvas id="fractalCanvas"></canvas>
             </section>
         </main>
         <footer>
@@ -238,103 +240,53 @@
             const timeString = now.toLocaleTimeString();
             document.querySelector("#current-time").textContent = `Текущее время: ${timeString}`;
         }
-        const canvas = document.getElementById('cubeCanvas');
+
+        const canvas = document.getElementById('fractalCanvas');
         const ctx = canvas.getContext('2d');
+        const maxDepth = 6;  // Максимальная глубина рекурсии
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let angleX = 0;
-        let angleY = 0;
-        let isMouseMoving = false;
-        let mouseStopTimeout;
-
-        // Cube vertices
-        const cubeSize = 100;
-        const vertices = [
-            { x: -1, y: -1, z: -1 },
-            { x: 1, y: -1, z: -1 },
-            { x: 1, y: 1, z: -1 },
-            { x: -1, y: 1, z: -1 },
-            { x: -1, y: -1, z: 1 },
-            { x: 1, y: -1, z: 1 },
-            { x: 1, y: 1, z: 1 },
-            { x: -1, y: 1, z: 1 },
-        ];
-
-        const edges = [
-            [0, 1], [1, 2], [2, 3], [3, 0],
-            [4, 5], [5, 6], [6, 7], [7, 4],
-            [0, 4], [1, 5], [2, 6], [3, 7]
-        ];
-
-        function rotate(vertex, angleX, angleY) {
-            const cosX = Math.cos(angleX);
-            const sinX = Math.sin(angleX);
-            const cosY = Math.cos(angleY);
-            const sinY = Math.sin(angleY);
-
-            // Rotate around X-axis
-            let y = vertex.y * cosX - vertex.z * sinX;
-            let z = vertex.y * sinX + vertex.z * cosX;
-            
-            // Rotate around Y-axis
-            let x = vertex.x * cosY + z * sinY;
-            z = -vertex.x * sinY + z * cosY;
-
-            return { x, y, z };
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
 
-        function project(vertex) {
-            const distance = 4;
-            const z = vertex.z + distance;
-            const perspective = cubeSize / z;
-            const x = vertex.x * perspective + canvas.width / 2;
-            const y = vertex.y * perspective + canvas.height / 2;
-            return { x, y };
-        }
+        resizeCanvas(); // Adjust canvas size initially
 
-        function drawCube() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const rotatedVertices = vertices.map(v => rotate(v, angleX, angleY));
-            const projectedVertices = rotatedVertices.map(v => project(v));
+        window.addEventListener('resize', resizeCanvas); // Adjust canvas size on window resize
 
+        // Функция для рисования треугольника Серпинского
+        function drawSierpinski(x, y, size, depth) {
+            if (depth === 0) return;
+
+            const h = Math.sqrt(3) * size / 2;
+            const halfSize = size / 2;
+
+            // Вершины треугольника
+            const v1 = { x, y };
+            const v2 = { x: x + size, y };
+            const v3 = { x: x + halfSize, y: y - h };
+
+            // Рисуем основной треугольник
             ctx.beginPath();
-            edges.forEach(([start, end]) => {
-                const v1 = projectedVertices[start];
-                const v2 = projectedVertices[end];
-                ctx.moveTo(v1.x, v1.y);
-                ctx.lineTo(v2.x, v2.y);
-            });
-            ctx.strokeStyle = "white";
+            ctx.moveTo(v1.x, v1.y);
+            ctx.lineTo(v2.x, v2.y);
+            ctx.lineTo(v3.x, v3.y);
+            ctx.closePath();
             ctx.stroke();
+
+            // Рекурсивно рисуем под-треугольники
+            drawSierpinski(v1.x, v1.y, halfSize, depth - 1);
+            drawSierpinski(v2.x, v2.y, halfSize, depth - 1);
+            drawSierpinski(v3.x, v3.y, halfSize, depth - 1);
         }
 
-        function autoRotate() {
-            drawCube();
-            requestAnimationFrame(autoRotate);
+        function renderFractal() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSierpinski(50, canvas.height - 100, 300, maxDepth);
         }
-
-        canvas.addEventListener('mousemove', (event) => {
-            isMouseMoving = true;
-            clearTimeout(mouseStopTimeout);
-
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left - canvas.width / 2;
-            const mouseY = event.clientY - rect.top - canvas.height / 2;
-
-            angleX = mouseY * 0.001;
-            angleY = mouseX * 0.001;
-
-            mouseStopTimeout = setTimeout(() => {
-                isMouseMoving = false;
-            }, 200);
-        });
-
-        autoRotate();
 
         setInterval(updateTime, 1000);
-        updateTime();
+        renderFractal();  // Start drawing the fractal initially
     </script>
 </body>
 </html>
