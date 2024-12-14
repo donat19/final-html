@@ -26,6 +26,7 @@
             display: flex;
             flex-direction: column;
             height: 100%; /* Ensures container stretches the full height */
+            padding: 10px;
         }
 
         header, footer {
@@ -101,20 +102,21 @@
         }
 
         main {
-            flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
             gap: 10px;
+            flex: 1;
         }
 
-        .main-left-top, .main-left-bottom, .main-right {
-            flex: 1;
-            min-width: 300px;
+        .main-left, .main-right {
             background-color: white;
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 5px;
+        }
+
+        .main-right {
+            height: 100%;
         }
 
         .banner {
@@ -153,13 +155,18 @@
             background-color: #222222;
         }
 
+        canvas {
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div class="page-container">
         <header>
-            <div class="header-message" id="header-message"></div>
-            <div class="time" id="current-time"></div>
+            <div id="header-message"></div>
+            <div id="current-time"></div>
         </header>
         <div class="banner" id="banner">
             <div id="slide" class="banner-slide">Banner 1</div>
@@ -175,8 +182,8 @@
                 <button onclick="toggleTheme()">Switch Theme</button>
             </div>
         </nav>
-        <main class="container">
-            <div class="main-left">
+        <main>
+            <section class="main-left">
                 <div class="main-left-top">
                     <button id="story-button">Tell Me a Story</button>
                     <div id="story-block"></div>
@@ -185,9 +192,10 @@
                     <button id="loan-button">Loan Analysis</button>
                     <div id="loan-result"></div>
                 </div>
-            </div>
-            <div class="main-right">
+            </section>
+            <section class="main-right">
                 <canvas id="cubeCanvas"></canvas>
+            </section>
         </main>
         <footer>
             <p>Контакты: email@example.com | Телефон: +123456789</p>
@@ -227,26 +235,26 @@
             document.querySelector("#current-time").textContent = `Текущее время: ${timeString}`;
         }
 
-        const cube = document.getElementById('cube');
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        const cube = document.getElementById('cubeCanvas');
 
         function updateCubePosition(event) {
-            const cubeRect = cube.getBoundingClientRect();
-            const cubeCenterX = cubeRect.left + cubeRect.width / 2;
-            const cubeCenterY = cubeRect.top + cubeRect.height / 2;
+            const rect = cube.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
 
             const mouseX = event.clientX;
             const mouseY = event.clientY;
 
-            const angleX = (mouseY - cubeCenterY) / 10;
-            const angleY = (mouseX - cubeCenterX) / 10;
+            const angleX = (mouseY - centerY) / 10;
+            const angleY = (mouseX - centerX) / 10;
 
-            cube.style.transform = `rotateX(${-angleX}deg) rotateY(${angleY}deg)`;
+            cube.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg)`;
         }
 
         document.addEventListener('mousemove', updateCubePosition);
-
-        setInterval(updateTime, 1000);
-        updateTime();
     </script>
 </body>
 </html>
