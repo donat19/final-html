@@ -11,11 +11,20 @@
             padding: 0;
             background-color: #f0f0f0;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        .container {
-            width: 1000px;
+        .page-container {
+            width: 100%;
+            max-width: 1000px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         header, footer {
@@ -23,6 +32,11 @@
             padding: 10px;
             background-color: #4CAF50;
             color: white;
+        }
+
+        footer {
+            margin-top: auto;
+            font-size: 14px;
         }
 
         nav {
@@ -86,8 +100,10 @@
         }
 
         main {
-            display: flex;
-            flex-wrap: wrap;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
             gap: 10px;
         }
 
@@ -98,11 +114,6 @@
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 5px;
-        }
-
-        footer {
-            margin-top: 20px;
-            font-size: 14px;
         }
 
         .banner {
@@ -127,10 +138,58 @@
             font-weight: bold;
             transition: background-color 1s;
         }
+
+        .dark-theme {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .dark-theme nav {
+            background-color: #222222;
+        }
+
+        .dark-theme footer {
+            background-color: #222222;
+        }
+
+        #cube-container {
+            width: 150px;
+            height: 150px;
+            perspective: 600px;
+            margin: auto;
+        }
+
+        #cube {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.2s ease;
+        }
+
+        .face {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-color: #3498db;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .front  { transform: translateZ(75px); }
+        .back   { transform: rotateY(180deg) translateZ(75px); }
+        .left   { transform: rotateY(-90deg) translateZ(75px); }
+        .right  { transform: rotateY(90deg) translateZ(75px); }
+        .top    { transform: rotateX(90deg) translateZ(75px); }
+        .bottom { transform: rotateX(-90deg) translateZ(75px); }
+
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="page-container">
         <header>
             <div class="header-message" id="header-message"></div>
             <div class="time" id="current-time"></div>
@@ -149,16 +208,29 @@
                 <button onclick="toggleTheme()">Switch Theme</button>
             </div>
         </nav>
-        <main>
-            <div class="main-left-top">
-                <button id="story-button">Tell Me a Story</button>
-                <div id="story-block"></div>
+        <main class="container">
+            <div class="main-left">
+                <div class="main-left-top">
+                    <button id="story-button">Tell Me a Story</button>
+                    <div id="story-block"></div>
+                </div>
+                <div class="main-left-bottom">
+                    <button id="loan-button">Loan Analysis</button>
+                    <div id="loan-result"></div>
+                </div>
             </div>
-            <div class="main-left-bottom">
-                <button id="loan-button">Loan Analysis</button>
-                <div id="loan-result"></div>
+            <div class="main-right">
+                <div id="cube-container">
+                    <div id="cube">
+                        <div class="face front"></div>
+                        <div class="face back"></div>
+                        <div class="face left"></div>
+                        <div class="face right"></div>
+                        <div class="face top"></div>
+                        <div class="face bottom"></div>
+                    </div>
+                </div>
             </div>
-            <div class="main-right"></div>
         </main>
         <footer>
             <p>Контакты: email@example.com | Телефон: +123456789</p>
@@ -197,6 +269,24 @@
             const timeString = now.toLocaleTimeString();
             document.querySelector("#current-time").textContent = `Текущее время: ${timeString}`;
         }
+
+        const cube = document.getElementById('cube');
+
+        function updateCubePosition(event) {
+            const cubeRect = cube.getBoundingClientRect();
+            const cubeCenterX = cubeRect.left + cubeRect.width / 2;
+            const cubeCenterY = cubeRect.top + cubeRect.height / 2;
+
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+
+            const angleX = (mouseY - cubeCenterY) / 10;
+            const angleY = (mouseX - cubeCenterX) / 10;
+
+            cube.style.transform = `rotateX(${-angleX}deg) rotateY(${angleY}deg)`;
+        }
+
+        document.addEventListener('mousemove', updateCubePosition);
 
         setInterval(updateTime, 1000);
         updateTime();
