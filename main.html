@@ -104,7 +104,7 @@
         main {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 20px;
             flex: 1;
         }
 
@@ -117,7 +117,6 @@
 
         .main-left-top, .main-left-bottom {
             height: 50%;
-            width: 50%;
         }
 
         .main-right {
@@ -166,6 +165,64 @@
             width: 100%;
             border: 1px solid black;
         }
+
+        #story-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
+        #story-block {
+            margin-top: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        #loan-result {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .loan-analysis {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .footer {
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -191,13 +248,40 @@
         <main>
             <section class="main-left">
                 <div class="main-left-top">
-                    <button id="story-button">Tell Me a Story</button>
+                    <button id="story-button">Расскажи мне историю</button>
+                    <div id="input-form" style="display: none;">
+                        <label for="character">Введите имя персонажа:</label>
+                        <input type="text" id="character" placeholder="Имя персонажа"><br>
+                        <label for="place">Введите место действия:</label>
+                        <input type="text" id="place" placeholder="Место действия"><br>
+                        <label for="action">Что будет делать персонаж?</label>
+                        <input type="text" id="action" placeholder="Действие"><br>
+                        <button id="submit-story">Создать историю</button>
+                    </div>
                     <div id="story-block"></div>
-                </div>
-                <div class="main-left-bottom">
-                    <button id="loan-button">Loan Analysis</button>
-                    <div id="loan-result"></div>
-                </div>
+                    <div class="loan-analysis">
+                        <button class="button" id="generateButton">Анализ кредита</button>
+                        <h1>Анализ кредита</h1>
+                        <div class="details">
+                            <p><strong>Сумма кредита:</strong> $10,000.00</p>
+                            <p><strong>Причина:</strong> Покупка автомобиля</p>
+                            <p><strong>Дата отчёта:</strong> 14 декабря 2024</p>
+                        </div>
+                        <table id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Годы</th>
+                                    <th>Проценты</th>
+                                    <th>Общая сумма</th>
+                                    <th>Ежемесячный платёж</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <div class="footer" id="selectedOption">
+                            Выбранный вариант выплаты: 10 лет
+                        </div>
+                    </div>
             </section>
             <section class="main-right">
                 <canvas id="fractalCanvas"></canvas>
@@ -241,13 +325,47 @@
             document.querySelector("#current-time").textContent = `Current Time: ${timeString}`;
         }
 
-        const canvas = document.getElementById('fractalCanvas');
-        const ctx = canvas.getContext('2d');
+        document.getElementById("story-button").addEventListener("click", function () {
+            document.getElementById("input-form").style.display = "block";
+            document.getElementById("story-button").style.display = "none";
+        });
 
-        
-        // Initial time update
+        document.getElementById("submit-story").addEventListener("click", function () {
+            const character = document.getElementById("character").value;
+            const place = document.getElementById("place").value;
+            const action = document.getElementById("action").value;
+
+            const story = `Once upon a time, ${character} was in ${place}. They decided to ${action}.`;
+            document.getElementById("story-block").textContent = story;
+        });
+        document.getElementById('generateButton').addEventListener('click', function () {
+            const loanAmount = parseFloat(prompt("Введите сумму кредита (например, 10000):")) || 10000;
+            const reason = prompt("Введите причину кредита:") || "Не указано";
+            const rate = 0.053; // 5.3% годовых
+
+            const resultsTable = document.getElementById('resultsTable').querySelector('tbody');
+            resultsTable.innerHTML = '';
+
+            for (let years = 1; years <= 10; years++) {
+                const interest = loanAmount * rate * years;
+                const total = loanAmount + interest;
+                const monthlyPayment = total / (years * 12);
+
+                const row = `<tr>
+                    <td>${years}</td>
+                    <td>$${interest.toFixed(2)}</td>
+                    <td>$${total.toFixed(2)}</td>
+                    <td>$${monthlyPayment.toFixed(2)}</td>
+                </tr>`;
+                resultsTable.insertAdjacentHTML('beforeend', row);
+            }
+
+            const selectedYears = parseInt(prompt("Выберите количество лет для погашения кредита (1-10):")) || 10;
+            document.getElementById('selectedOption').textContent = `Выбранный вариант выплаты: ${selectedYears} лет`;
+        });
+
+        updateTime();
         setInterval(updateTime, 1000);
-
     </script>
 </body>
 </html>
