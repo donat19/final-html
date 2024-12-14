@@ -96,10 +96,6 @@
         }
 
         function autoRotate() {
-            if (!isMouseMoving) {
-                angleX += 0.01;
-                angleY += 0.01;
-            }
             drawCube();
             requestAnimationFrame(autoRotate);
         }

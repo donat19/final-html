@@ -238,27 +238,103 @@
             const timeString = now.toLocaleTimeString();
             document.querySelector("#current-time").textContent = `Текущее время: ${timeString}`;
         }
+        const canvas = document.getElementById('cubeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let angleX = 0;
+        let angleY = 0;
+        let isMouseMoving = false;
+        let mouseStopTimeout;
+
+        // Cube vertices
+        const cubeSize = 100;
+        const vertices = [
+            { x: -1, y: -1, z: -1 },
+            { x: 1, y: -1, z: -1 },
+            { x: 1, y: 1, z: -1 },
+            { x: -1, y: 1, z: -1 },
+            { x: -1, y: -1, z: 1 },
+            { x: 1, y: -1, z: 1 },
+            { x: 1, y: 1, z: 1 },
+            { x: -1, y: 1, z: 1 },
+        ];
+
+        const edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7]
+        ];
+
+        function rotate(vertex, angleX, angleY) {
+            const cosX = Math.cos(angleX);
+            const sinX = Math.sin(angleX);
+            const cosY = Math.cos(angleY);
+            const sinY = Math.sin(angleY);
+
+            // Rotate around X-axis
+            let y = vertex.y * cosX - vertex.z * sinX;
+            let z = vertex.y * sinX + vertex.z * cosX;
+            
+            // Rotate around Y-axis
+            let x = vertex.x * cosY + z * sinY;
+            z = -vertex.x * sinY + z * cosY;
+
+            return { x, y, z };
+        }
+
+        function project(vertex) {
+            const distance = 4;
+            const z = vertex.z + distance;
+            const perspective = cubeSize / z;
+            const x = vertex.x * perspective + canvas.width / 2;
+            const y = vertex.y * perspective + canvas.height / 2;
+            return { x, y };
+        }
+
+        function drawCube() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const rotatedVertices = vertices.map(v => rotate(v, angleX, angleY));
+            const projectedVertices = rotatedVertices.map(v => project(v));
+
+            ctx.beginPath();
+            edges.forEach(([start, end]) => {
+                const v1 = projectedVertices[start];
+                const v2 = projectedVertices[end];
+                ctx.moveTo(v1.x, v1.y);
+                ctx.lineTo(v2.x, v2.y);
+            });
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+        }
+
+        function autoRotate() {
+            drawCube();
+            requestAnimationFrame(autoRotate);
+        }
+
+        canvas.addEventListener('mousemove', (event) => {
+            isMouseMoving = true;
+            clearTimeout(mouseStopTimeout);
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left - canvas.width / 2;
+            const mouseY = event.clientY - rect.top - canvas.height / 2;
+
+            angleX = mouseY * 0.001;
+            angleY = mouseX * 0.001;
+
+            mouseStopTimeout = setTimeout(() => {
+                isMouseMoving = false;
+            }, 200);
+        });
+
+        autoRotate();
 
         setInterval(updateTime, 1000);
         updateTime();
-
-        const cube = document.getElementById('cubeCanvas');
-
-        function updateCubePosition(event) {
-            const rect = cube.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
-
-            const angleX = (mouseY - centerY) / 10;
-            const angleY = (mouseX - centerX) / 10;
-
-            cube.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg)`;
-        }
-
-        document.addEventListener('mousemove', updateCubePosition);
     </script>
 </body>
 </html>
